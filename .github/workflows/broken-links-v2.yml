@@ -1,0 +1,50 @@
+name: Broken Links
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "00 18 * * *"
+
+jobs:
+  build_and_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: yarn
+
+      - name: Install and build
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Link Checker
+        id: lychee
+        uses: lycheeverse/lychee-action@v1.7.0
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          args: --verbose --exclude-path ./node_modules/ "./**/*.js" "./**/*.ts" "./**/*.html" "./**/*.json" "./**/*.md"
+
+      - name: Save Lychee Output
+        run: |
+          mkdir -p lychee
+          lychee --verbose --exclude-path ./node_modules/ "./**/*.js" "./**/*.ts" "./**/*.html" "./**/*.json" "./**/*.md" > lychee/output.txt || true
+          split -b 50k lychee/output.txt lychee/output_part_
+
+      - name: Create Issues From Files
+        uses: peter-evans/create-issue-from-file@v4
+        with:
+          title: Link Checker Report - Part ${{ index }}
+          content-filepath: ${{ each(outputs.split_files) }}
+          labels: report, automated issue
+        env:
+          split_files: |
+            ${{ steps.split.outputs.split_files }}
+        shell: bash
+        run: |
+          for file in lychee/output_part_*; do
+            echo "${file}" >> $GITHUB_ENV
+          done
