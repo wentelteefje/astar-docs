@@ -49,7 +49,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update link tracking issue (update invalid links)
-        if: env.LYCHEE_EXIT_CODE != 0
+        if: env.LYCHEE_EXIT_CODE == 0
         uses: actions-cool/issues-helper@v3
         with:
           actions: "update-issue"
@@ -60,7 +60,7 @@ jobs:
           update-mode: "replace"
 
       - name: Update link tracking issue (no invalid links)
-        if: env.LYCHEE_EXIT_CODE == 0
+        if: env.LYCHEE_EXIT_CODE != 0
         uses: actions-cool/issues-helper@v3
         with:
           actions: "update-issue"
