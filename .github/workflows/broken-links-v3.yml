@@ -13,7 +13,6 @@ permissions:
 
 jobs:
   check-urls:
-    if: ${{ !github.event.repository.fork }}
     env:
       LYCHEE_REPORT_FILE: ./lychee/out.md
     runs-on: ubuntu-latest
@@ -23,18 +22,24 @@ jobs:
       - name: Link Checker
         id: lychee
         uses: lycheeverse/lychee-action@v1.8.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: --verbose --output ${{ env.LYCHEE_REPORT_FILE }}
 
       - name: Read Lychee report
-        if: env.lychee_exit_code != 0
+        if: failure()
         id: readReport
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "FILE_CONTENT<<$EOF" >> $GITHUB_OUTPUT
           echo "$(cat ${{ env.LYCHEE_REPORT_FILE }})" >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
+
       - run: echo "${{ steps.readReport.outputs.FILE_CONTENT }}"
+
       - name: Update link tracking issue (update invalid links)
-        if: env.lychee_exit_code != 0
+        if: failure()
         uses: actions-cool/issues-helper@v3
         with:
           actions: "update-issue"
@@ -45,12 +50,12 @@ jobs:
           update-mode: "replace"
 
       - name: Update link tracking issue (no invalid links)
-        if: env.lychee_exit_code == 0
+        if: success()
         uses: actions-cool/issues-helper@v3
         with:
           actions: "update-issue"
           token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ env.link_tracking_issue_number }}
+          issue-number: ${{ env.LINK_TRACKING_ISSUE_NUMBER }}
           state: "closed"
           body: "No invalid links found! 🤖"
           update-mode: "replace"
