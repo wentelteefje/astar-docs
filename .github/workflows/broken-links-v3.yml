@@ -6,7 +6,7 @@ on:
     - cron: 0 0 * * 0
 
 env:
-  LINK_TRACKING_ISSUE_NUMBER: 322
+  LINK_TRACKING_ISSUE_NUMBER: 1
   
 permissions:
   issues: write
