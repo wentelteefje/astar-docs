@@ -25,7 +25,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: --verbose
+          args: --verbose --exclude-path ./node_modules/ "./**/*.js" "./**/*.ts" "./**/*.html" "./**/*.json" "./**/*.md"
 
       - name: Read Lychee report
         if: failure()
