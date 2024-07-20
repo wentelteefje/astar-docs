@@ -33,18 +33,14 @@ jobs:
           mkdir -p lychee
           lychee --verbose --exclude-path ./node_modules/ "./**/*.js" "./**/*.ts" "./**/*.html" "./**/*.json" "./**/*.md" > lychee/output.txt || true
           split -b 50k lychee/output.txt lychee/output_part_
+        shell: bash
 
       - name: Create Issues From Files
-        uses: peter-evans/create-issue-from-file@v4
-        with:
-          title: Link Checker Report - Part ${{ index }}
-          content-filepath: ${{ each(outputs.split_files) }}
-          labels: report, automated issue
-        env:
-          split_files: |
-            ${{ steps.split.outputs.split_files }}
-        shell: bash
         run: |
           for file in lychee/output_part_*; do
-            echo "${file}" >> $GITHUB_ENV
+            echo "Creating issue for ${file}"
+            gh issue create -t "Link Checker Report - Part $(basename $file)" -F $file -l "report,automated issue"
           done
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        shell: bash
