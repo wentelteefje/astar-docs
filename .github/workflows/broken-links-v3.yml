@@ -6,7 +6,7 @@ on:
     - cron: 0 0 * * 0
 
 env:
-  LINK_TRACKING_ISSUE_NUMBER: 1
+  LINK_TRACKING_ISSUE_NUMBER: 322
   
 permissions:
   issues: write
@@ -25,7 +25,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: --verbose --output ${{ env.LYCHEE_REPORT_FILE }}
+          args: --verbose
 
       - name: Read Lychee report
         if: failure()
@@ -37,6 +37,13 @@ jobs:
           echo "$EOF" >> $GITHUB_OUTPUT
 
       - run: echo "${{ steps.readReport.outputs.FILE_CONTENT }}"
+
+      - name: Debug Issue Number
+        run: |
+          echo "Checking if issue number ${{ env.LINK_TRACKING_ISSUE_NUMBER }} exists"
+          gh issue view ${{ env.LINK_TRACKING_ISSUE_NUMBER }} || echo "Issue not found"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update link tracking issue (update invalid links)
         if: failure()
