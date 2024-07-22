@@ -86,7 +86,7 @@ const config = {
             type: "doc",
             docId: "build/index",
             position: "left",
-            label: "Start Building",
+            label: "Parachain",
           },
           {
             type: "doc",
@@ -103,6 +103,9 @@ const config = {
             to: "https://www.youtube.com/channel/UC36JgEF6gqatVSK9xlzzrvQ",
             label: "Youtube",
             position: "left",
+          },
+          {
+            type: 'docsVersionDropdown',
           },
           {
             type: "localeDropdown",
